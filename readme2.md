@@ -24,23 +24,23 @@ Step 1: Set Up Hyperledger Cacti
 Start by setting up Hyperledger Cacti, which will facilitate the cross-network communication.
 
 1.1 Clone the Cacti Repository
-
+```
 git clone https://github.com/hyperledger/cacti.git
 cd cacti
-
+```
 1.2 Install Cacti Dependencies
 
 Navigate to the Cacti directory and install the necessary dependencies:
-
+```
 cd ./packages/cactus-plugin-ledger-connector-fabric-socketio/
 npm install
-
+```
 1.3 Set Up Fabric Connectors
 
 Configure Cacti to interact with both Network A and Network B by setting up two Fabric connectors.
 
 For example, in the configuration file for Network A:
-
+```
 {
   "pluginRegistry": [
     {
@@ -57,7 +57,7 @@ For example, in the configuration file for Network A:
     }
   ]
 }
-
+```
 A similar configuration is needed for Network B.
 
 
@@ -77,7 +77,7 @@ The chaincode on both Network A and Network B must be modified to:
 2.1 Chaincode for Network A (Golang)
 
 Here’s an example of the modified fabcar chaincode for Network A:
-
+```
 package main
 
 import (
@@ -194,7 +194,7 @@ func main() {
 		fmt.Printf("Error starting fabcar chaincode: %s", err.Error())
 	}
 }
-
+```
 Key Functions:
 
 1. CreateCar: Adds a new car to the ledger and emits a CarCreated event, which Cacti can listen to for triggering data relay.
@@ -212,7 +212,7 @@ Key Functions:
 The chaincode for Network B will be nearly identical to that of Network A. It must also support the RelayCar function to accept relayed data.
 
 Example chaincode for Network B:
-
+```
 func (s *SmartContract) RelayCar(ctx contractapi.TransactionContextInterface, carID string, carDetails string) error {
 	var car Car
 	err := json.Unmarshal([]byte(carDetails), &car)
@@ -228,7 +228,7 @@ func (s *SmartContract) RelayCar(ctx contractapi.TransactionContextInterface, ca
 
 	return nil
 }
-
+```
 The rest of the code will remain the same as in Network A.
 
 
@@ -241,7 +241,7 @@ Now, set up Hyperledger Cacti to listen for the CarCreated event on Network A an
 3.1 Relay Logic Using Cacti
 
 Here’s a simplified version of how you can relay the data using Cacti connectors:
-
+```
 const FabricConnector = require('@hyperledger/cacti-plugin-ledger-connector-fabric');
 
 async function relayData(networkAClient, networkBClient, carID) {
@@ -265,7 +265,7 @@ async function relayData(networkAClient, networkBClient, carID) {
 
     console.log("Data relayed to Network B: ", txB);
 }
-
+```
 networkAClient: Connector to Network A.
 
 networkBClient: Connector to Network B.
