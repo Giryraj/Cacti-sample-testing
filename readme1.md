@@ -44,7 +44,7 @@ You might want to queue the events and relay them in batches instead of one-by-o
 Full Code Summary
 
 4.1 Chaincode for Network A (Fabcar)
-
+```
 package main
 
 import (
@@ -115,4 +115,76 @@ func (s *SmartContract) RelayCar(ctx contractapi.TransactionContextInterface, ca
 	carAsBytes, _ := json.Marshal(car)
 	err = ctx.GetStub().PutState(carID, carAsBytes)
 	if err != nil {
+return fmt.Errorf("Failed to store relayed car: %v", err)
+	}
 
+	return nil
+}
+
+func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, carID string) (*Car, error) {
+	carAsBytes, err := ctx.GetStub().GetState(carID)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read from world state: %v", err)
+	}
+	if carAsBytes == nil {
+		return nil, fmt.Errorf("Car %s does not exist", carID)
+	}
+
+	var car Car
+	err = json.Unmarshal(carAsBytes, &car)
+	if err != nil {
+		return nil, err
+	}
+
+	return &car, nil
+}
+
+func main() {
+	chaincode, err := contractapi.NewChaincode(new(SmartContract))
+	if err != nil {
+		fmt.Printf("Error creating fabcar chaincode: %s", err.Error())
+		return
+	}
+
+	if err := chaincode.Start(); err != nil {
+		fmt.Printf("Error starting fabcar chaincode: %s", err.Error())
+	}
+}
+```
+4.2 Cacti Relay Logic
+
+Here’s how you can implement the Hyperledger Cacti relay logic to listen to events from Network A and relay data to Network B:
+```
+const { PluginLedgerConnectorFabric } = require("@hyperledger/cacti-plugin-ledger-connector-fabric");
+
+async function relayCarFromNetworkAtoNetworkB(networkAClient, networkBClient, carID) {
+    try {
+        // Query the car data from Network A
+        const carData = await networkAClient.transact({
+            contractName: 'fabcar',
+            channelName: 'mychannel',
+            methodName: 'QueryCar',
+            args: [carID],
+        });
+        console.log(`Car data from Network A: ${JSON.stringify(carData)}`);
+
+        // Relay the car data to Network B
+        const relayResponse = await networkBClient.transact({
+            contractName: 'fabcar',
+            channelName: 'mychannel',
+            methodName: 'RelayCar',
+            args: [carID, JSON.stringify(carData)],
+        });
+        console.log(`Data successfully relayed to Network B: ${relayResponse}`);
+    } catch (error) {
+        console.error("Error relaying car data: ", error);
+    }
+}
+
+// Event listener for Network A
+networkAClient.on("CarCreated", async (event) => {
+    console.log("CarCreated event detected from Network A", event);
+    const carID = event.key;
+    await relayCarFromNetwork
+
+```
