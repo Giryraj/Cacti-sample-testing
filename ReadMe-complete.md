@@ -40,7 +40,7 @@ npm install
 1.3 Set Up Fabric Connectors
 
 Set up two Fabric connectors in the Cacti configuration—one for Network A and one for Network B. Here’s an example configuration for Network A:
-
+```
 {
   "pluginRegistry": [
     {
@@ -57,7 +57,7 @@ Set up two Fabric connectors in the Cacti configuration—one for Network A and 
     }
   ]
 }
-
+```
 You will also need a similar configuration for Network B.
 
 
