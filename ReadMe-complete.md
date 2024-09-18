@@ -28,15 +28,15 @@ Step 1: Set Up Hyperledger Cacti
 Start by setting up Hyperledger Cacti to facilitate communication between the two networks.
 
 1.1 Clone the Cacti Repository
-
+```
 git clone https://github.com/hyperledger/cacti.git
 cd cacti
-
+```
 1.2 Install Cacti Dependencies
-
+```
 cd ./packages/cactus-plugin-ledger-connector-fabric-socketio/
 npm install
-
+```
 1.3 Set Up Fabric Connectors
 
 Set up two Fabric connectors in the Cacti configuration—one for Network A and one for Network B. Here’s an example configuration for Network A:
@@ -70,7 +70,7 @@ Next, you’ll need to modify the chaincode on both networks to support event em
 2.1 Chaincode for Network A (Fabcar)
 
 Here is an example of the modified Go chaincode for Network A to emit events when a new car is created:
-
+```
 package main
 
 import (
@@ -148,13 +148,13 @@ func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, ca
 
 	return &car, nil
 }
-
+```
 This code emits a CarCreated event when a new car is added to Network A, which Cacti will listen for.
 
 2.2 Chaincode for Network B (Fabcar)
 
 The chaincode for Network B needs to support receiving data relayed from Network A. Here is an example:
-
+```
 func (s *SmartContract) RelayCar(ctx contractapi.TransactionContextInterface, carID string, carDetails string) error {
 	var car Car
 	err := json.Unmarshal([]byte(carDetails), &car)
@@ -170,7 +170,7 @@ func (s *SmartContract) RelayCar(ctx contractapi.TransactionContextInterface, ca
 
 	return nil
 }
-
+```
 This function accepts a car’s details (relayed from Network A) and stores it in Network B’s ledger.
 
 
@@ -183,7 +183,7 @@ Now, you will implement the relay logic in Hyperledger Cacti to listen for event
 3.1 Relay Logic in Cacti (Node.js)
 
 Here’s the relay logic using Cacti connectors to listen for a CarCreated event from Network A and send the car data to Network B:
-
+```
 const { PluginLedgerConnectorFabric } = require("@hyperledger/cacti-plugin-ledger-connector-fabric");
 
 async function relayCarFromNetworkAtoNetworkB(networkAClient, networkBClient, carID) {
@@ -216,7 +216,7 @@ networkAClient.on("CarCreated", async (event) => {
     const carID = event.key;
     await relayCarFromNetworkAtoNetworkB(networkAClient, networkBClient, carID);
 });
-
+```
 Step 4: Final Considerations
 
 1. Authentication and Security: Ensure that both networks have secure authentication set up (admin credentials, secure connection profiles) and that Cacti connectors are properly authenticated.
